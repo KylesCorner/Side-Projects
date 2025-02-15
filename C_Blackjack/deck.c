@@ -30,7 +30,6 @@ void addDeck(struct Deck *d){
     }
   }
   deckShuffle(d);
-
 }
 
 void push(struct Deck *d, struct Node *n) {
