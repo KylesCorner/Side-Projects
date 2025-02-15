@@ -1,0 +1,5 @@
+*.txt
+/Mazer/temp/
+/Mazer/__pycache__/
+*.out
+/.vscode/
