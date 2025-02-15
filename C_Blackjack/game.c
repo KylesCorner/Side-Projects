@@ -23,7 +23,7 @@ void dealerUI() {
 
 void bet(int amount) {
   if (amount > coins) {
-    amount = 0;
+    amount = coins;
   }
   pot += amount;
   coins -= amount;
@@ -55,6 +55,15 @@ void checkWinLose() {
   int dealerSum = sumDeck(&dealerHand);
   int playerSum = sumDeck(&playerHand);
 
+  if (playerSum == dealerSum) {
+    playerUI();
+    printf("Tied!\n");
+    coins += pot;
+    pot = 0;
+    deal();
+    return;
+  }
+
   if (dealerSum == 21) {
     dealerUI();
     printf("Dealer Blackjack.\n");
@@ -72,15 +81,6 @@ void checkWinLose() {
     return;
   }
 
-  if (playerSum == 21) {
-    playerUI();
-    printf("Player Blackjack!\n");
-    coins += pot * 2;
-    pot = 0;
-    deal();
-    return;
-  }
-
   if (playerSum > 21) {
     playerUI();
     printf("Player Bust!\n");
@@ -90,10 +90,10 @@ void checkWinLose() {
   }
 
   if (choice == 3) {
-    if (playerSum == dealerSum) {
+    if (playerSum == 21) {
       playerUI();
-      printf("Tied!\n");
-      coins += pot;
+      printf("Player Blackjack!\n");
+      coins += pot * 2;
       pot = 0;
       deal();
       return;
