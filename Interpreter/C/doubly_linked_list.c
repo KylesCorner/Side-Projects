@@ -17,6 +17,38 @@ void createList(List *empty_list) {
   empty_list->size = 0;
 }
 
+Node *searchList(List *l, int key) {
+
+  // Traverse through list
+  Node *curr = l->head;
+  int found = 0;
+  while (curr != NULL) {
+
+    // Key found
+    if (curr->data == key) {
+      found = 1;
+      break;
+    } else {
+      found = 0;
+    }
+    curr = curr->next;
+  }
+
+  // key not found in list
+  if (!found)
+    return NULL;
+
+  return curr;
+}
+
+void mergeList(List *original_list, List *addition_list) {
+  original_list->tail->next = addition_list->head;
+  addition_list->head->prev = original_list->tail;
+
+  addition_list->head = original_list->head;
+  original_list->tail = addition_list->tail;
+}
+
 void insertBeginning(List *l, int new_data) {
   Node *new_node = createNode(new_data);
 
@@ -91,93 +123,13 @@ void insertAt(List *l, int pos, int new_data) {
   // Update the next of current node to new node
   curr->next = new_node;
 
+  // Set prev of next node to new_node
   new_node->next->prev = new_node;
   l->size++;
 }
 
-void insertBeforeKey(List *l, int key, int new_data) {
-  Node *curr = l->head;
-
-  while (curr != NULL) {
-    if (curr->data == key) {
-      break;
-    }
-    curr = curr->next;
-  }
-
-  // given key is not found.
-  if (curr == NULL) {
-    // print error?
-    return;
-  }
-  Node *new_node = createNode(new_data);
-
-  new_node->prev = curr->prev;
-  new_node->next = curr;
-
-  if (curr->prev != NULL) {
-    curr->prev->next = new_node;
-
-  } else {
-    l->head = new_node;
-  }
-  curr->prev = new_node;
-  l->size++;
-}
-
-void insertAfterKey(List *l, int key, int new_data) {
-  Node *curr = l->head;
-
-  while (curr != NULL) {
-    if (curr->data == key) {
-      break;
-    }
-    curr = curr->next;
-  }
-
-  // given key is not found.
-  if (curr == NULL) {
-    // print error?
-    return;
-  }
-  Node *new_node = createNode(new_data);
-
-  new_node->prev = curr;
-  new_node->next = curr->next;
-  curr->next = new_node;
-
-  if (new_node->next != NULL) {
-    new_node->next->prev = new_node;
-  }
-  l->size++;
-}
-// Returns the index value of key, else return -1;
-int searchList(List *l, int key) {
-  Node *curr = l->head;
-  if (curr == NULL) {
-    return -1;
-  }
-
-  int index = 0;
-
-  while (curr != NULL) {
-    if (curr->data == key) {
-      break;
-    }
-    curr = curr->next;
-    index++;
-  }
-
-  if (index > 0) {
-    return index;
-  } else {
-    return -1;
-  }
-}
-
-// TODO: Refactor edge cases.
 void deleteHead(List *l) {
-  // If empty, return NULL
+  // empty condition
   if (l->head == NULL)
     return;
 
@@ -185,7 +137,7 @@ void deleteHead(List *l) {
   Node *temp = l->head;
 
   // Single node
-  if(l->head == l->tail){
+  if (l->head == l->tail) {
     l->head = NULL;
     l->tail = NULL;
     free(temp);
@@ -193,13 +145,11 @@ void deleteHead(List *l) {
     return;
   }
 
-
-
   // Move head to the next node
   l->head = l->head->next;
 
   // Set prev of the new head
-  if (l->head != NULL){
+  if (l->head != NULL) {
     l->head->prev = NULL;
   }
   // Free memory and return new head
@@ -207,7 +157,6 @@ void deleteHead(List *l) {
   l->size--;
 }
 
-// TODO: Refactor edge cases.
 void deleteTail(List *l) {
   // If empty, return NULL
   if (l->tail == NULL) {
@@ -217,7 +166,7 @@ void deleteTail(List *l) {
   Node *temp = l->tail;
 
   // Single node
-  if(l->head == l->tail){
+  if (l->head == l->tail) {
     l->head = NULL;
     l->tail = NULL;
     free(temp);
@@ -238,31 +187,18 @@ void deleteTail(List *l) {
 void deleteBefore(List *l, int key) {
 
   // List is already empty
-  if(l->size <= 0 ||(l->head == l->tail))
+  if (l->size <= 0 )
     return;
 
-  int found = 0;
   // If key is at head
   if (l->head->data == key) {
     return;
   }
 
-  // Traverse through list
-  Node *curr = l->head;
-  while (curr != NULL) {
+  // Search list for node
+  Node *curr = searchList(l, key);
 
-    // Key found
-    if (curr->data == key) {
-      found = 1;
-      break;
-    } else {
-      found = 0;
-    }
-    curr = curr->next;
-  }
-
-  // Key not found
-  if (!found)
+  if (curr == NULL)
     return;
 
   Node *toDelete = curr->prev;
@@ -280,8 +216,71 @@ void deleteBefore(List *l, int key) {
 
   l->size--;
 }
-void deleteAfter(List *l, int key);
-void deleteAt(List *l, int key);
+void deleteAfter(List *l, int key) {
+
+  // List is already empty
+  if (l->size <= 0 || (l->head == l->tail))
+    return;
+
+  // key is at tail
+  if (l->tail->data == key) {
+    return;
+  }
+
+  // Search list for node
+  Node *curr = searchList(l, key);
+
+  if (curr == NULL)
+    return;
+
+  Node *toDelete = curr->next;
+
+  // Node to delete is at tail
+  if (toDelete == l->tail) {
+    deleteTail(l);
+    return;
+  }
+
+  // isolate toDelete and free it
+  curr->next = toDelete->next;
+  toDelete->next->prev = curr;
+  free(toDelete);
+  l->size--;
+}
+// FIX: seg fault when deleting from middle of list. Doesnt empty the last node
+// in a single element list.
+void deleteAt(List *l, int key) {
+  // List is already empty
+  if (l->size <= 0)
+    return;
+
+  // key at head
+  if (l->head->data == key) {
+    deleteHead(l);
+    return;
+  }
+
+  // Search list for node
+  Node *curr = searchList(l, key);
+
+  // Key not found
+  if (curr == NULL)
+    return;
+
+
+  // node at tail
+  if (curr == l->tail) {
+    deleteTail(l);
+    return;
+  }
+
+
+  // Isolate and free the node
+  curr->prev->next = curr->next;
+  curr->next->prev = curr->prev;
+  free(curr);
+  l->size--;
+}
 void freeList(List *l) {
   Node *current = l->head;
   Node *nextNode;
@@ -315,5 +314,5 @@ void printListReversed(List *l) {
     printf(" %d,", curr->data);
     curr = curr->prev;
   }
-  printf(" ] size = %d\n", l->size);
+  printf(" ] <- Reversed size = %d\n", l->size);
 }
